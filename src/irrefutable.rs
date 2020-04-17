@@ -1,10 +1,12 @@
-use self::kw::unreachable;
+use self::kw::{panic, unreachable};
 use proc_macro2::{Ident, TokenStream};
 use quote::{quote, ToTokens};
 use syn::{
+    parenthesized,
     parse::{Parse, ParseStream},
-    ExprLet, Pat, PatBox, PatIdent, PatReference, PatStruct, PatTuple, PatTupleStruct, Result,
-    Token,
+    token::Paren,
+    ExprLet, LitStr, Pat, PatBox, PatIdent, PatReference, PatStruct, PatTuple, PatTupleStruct,
+    Result, Token,
 };
 
 fn parse_binds<'a>(binds: &mut Vec<Bind<'a>>, pat: &'a Pat) {
@@ -67,6 +69,7 @@ impl ToTokens for Irrefutable {
 
 /// Attribute.
 pub(super) enum Attribute {
+    Panic { lit_str: LitStr },
     Return,
     Unreachable,
 }
@@ -74,7 +77,14 @@ pub(super) enum Attribute {
 impl Parse for Attribute {
     fn parse(input: ParseStream) -> Result<Self> {
         let lookahead = input.lookahead1();
-        if lookahead.peek(Token![return]) {
+        if lookahead.peek(panic) {
+            input.parse::<panic>()?;
+            let content;
+            let _paren_token = parenthesized!(content in input);
+            Ok(Self::Panic {
+                lit_str: content.parse::<LitStr>()?,
+            })
+        } else if lookahead.peek(Token![return]) {
             input.parse::<Token![return]>()?;
             Ok(Self::Return)
         } else if lookahead.peek(unreachable) {
@@ -89,6 +99,7 @@ impl Parse for Attribute {
 impl ToTokens for Attribute {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         let attribute_tokens = match self {
+            Attribute::Panic { lit_str } => quote!(panic!(#lit_str);),
             Attribute::Return => quote!(return;),
             Attribute::Unreachable => quote!(unreachable!();),
         };
@@ -155,5 +166,6 @@ impl ToTokens for Kind<'_> {
 mod kw {
     use syn::custom_keyword;
 
+    custom_keyword!(panic);
     custom_keyword!(unreachable);
 }

@@ -4,13 +4,25 @@ use irrefutable::irrefutable;
 use std::ops::Range;
 
 #[cfg(test)]
+mod panic {
+    use super::*;
+
+    #[test]
+    #[should_panic(expected = "The panic cause.")]
+    fn tuple_struct() {
+        #[irrefutable(panic("The panic cause."))]
+        let Some("a") = Some("b");
+    }
+}
+
+#[cfg(test)]
 mod r#return {
     use super::*;
 
     #[test]
     fn tuple_struct() {
         #[irrefutable(return)]
-        let Some((_a, "b")) = Some(("a", "c"));
+        let Some("a") = Some("b");
         panic!("unreachable");
     }
 }

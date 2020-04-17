@@ -24,6 +24,8 @@ use syn::parse_macro_input;
 /// #[irrefutable(return)]
 /// let Some((a, b)) = Some(("a", "b"));
 /// ```
+/// 
+/// #[irrefutable(panic("ashkjsakj"))]
 #[proc_macro_attribute]
 pub fn irrefutable(attr: TokenStream, item: TokenStream) -> TokenStream {
     let attr = parse_macro_input!(attr as Attribute);
