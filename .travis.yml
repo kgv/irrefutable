@@ -1,0 +1,6 @@
+language: rust
+
+matrix:
+  include:
+  - rust: nightly
+    name: "Linux, nightly"
