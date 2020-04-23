@@ -11,7 +11,7 @@ panic:
 
 use irrefutable::irrefutable;
 
-#[irrefutable(panic("The couse."))]
+#[irrefutable(panic("The cause."))]
 let Some((a, b)) = Some(("a", "b"));
 ```
 
@@ -21,7 +21,7 @@ expands to:
 let (a, b) = if let Some((a, b)) = Some(("a", "b")) {
     (a, b)
 } else {
-    panic!("The couse.");
+    panic!("The cause.");
 };
 ```
 
