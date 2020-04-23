@@ -6,12 +6,30 @@ use std::ops::Range;
 #[cfg(test)]
 mod panic {
     use super::*;
+    use std::mem::discriminant;
 
     #[test]
     #[should_panic(expected = "The panic cause.")]
-    fn tuple_struct() {
+    fn without_args() {
+        let v = None;
         #[irrefutable(panic("The panic cause."))]
-        let Some("a") = Some("b");
+        let Some("a") = v;
+    }
+
+    #[test]
+    #[should_panic(expected = "The panic cause with arg: Discriminant(0).")]
+    fn with_arg() {
+        let v = None;
+        #[irrefutable(panic("The panic cause with arg: {:?}.", discriminant(&v)))]
+        let Some("a") = v;
+    }
+
+    #[test]
+    #[should_panic(expected = "The panic cause with args: Discriminant(0), Discriminant(1).")]
+    fn with_args() {
+        let v = None;
+        #[irrefutable(panic("The panic cause with args: {:?}, {:?}.", discriminant(&v), discriminant(&Some("a"))))]
+        let Some("a") = v;
     }
 }
 

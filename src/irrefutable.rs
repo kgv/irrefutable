@@ -4,9 +4,9 @@ use quote::{quote, ToTokens};
 use syn::{
     parenthesized,
     parse::{Parse, ParseStream},
-    token::Paren,
-    ExprLet, LitStr, Pat, PatBox, PatIdent, PatReference, PatStruct, PatTuple, PatTupleStruct,
-    Result, Token,
+    punctuated::Punctuated,
+    Expr, ExprLet, LitStr, Pat, PatBox, PatIdent, PatReference, PatStruct, PatTuple,
+    PatTupleStruct, Result, Token,
 };
 
 fn parse_binds<'a>(binds: &mut Vec<Bind<'a>>, pat: &'a Pat) {
@@ -69,7 +69,11 @@ impl ToTokens for Irrefutable {
 
 /// Attribute.
 pub(super) enum Attribute {
-    Panic { lit_str: LitStr },
+    Panic {
+        format: LitStr,
+        comma_token: Option<Token![,]>,
+        args: Punctuated<Expr, Token![,]>,
+    },
     Return,
     Unreachable,
 }
@@ -81,8 +85,17 @@ impl Parse for Attribute {
             input.parse::<panic>()?;
             let content;
             let _paren_token = parenthesized!(content in input);
+            let format = content.parse::<LitStr>()?;
+            let comma_token = content.parse::<Option<Token![,]>>()?;
+            let args = if comma_token.is_some() {
+                content.parse_terminated(Expr::parse)?
+            } else {
+                Punctuated::new()
+            };
             Ok(Self::Panic {
-                lit_str: content.parse::<LitStr>()?,
+                format,
+                comma_token,
+                args,
             })
         } else if lookahead.peek(Token![return]) {
             input.parse::<Token![return]>()?;
@@ -99,9 +112,13 @@ impl Parse for Attribute {
 impl ToTokens for Attribute {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         let attribute_tokens = match self {
-            Attribute::Panic { lit_str } => quote!(panic!(#lit_str);),
-            Attribute::Return => quote!(return;),
-            Attribute::Unreachable => quote!(unreachable!();),
+            Self::Panic {
+                format,
+                comma_token,
+                args,
+            } => quote!(panic!(#format #comma_token #args);),
+            Self::Return => quote!(return;),
+            Self::Unreachable => quote!(unreachable!();),
         };
         attribute_tokens.to_tokens(tokens);
     }
