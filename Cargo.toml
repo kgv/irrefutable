@@ -1,18 +1,18 @@
 [package]
 name = "irrefutable"
-version = "0.1.2"
+version = "0.1.3"
 authors = ["kgv <kgv@users.noreply.github.com>"]
-license = "MIT OR Apache-2.0"
-description = "Procedural macro to convert a refutable let expression to an irrefutable."
-homepage = "https://crates.io/crates/irrefutable"
-documentation = "https://docs.rs/irrefutable"
-repository = "https://github.com/kgv/irrefutable"
 edition = "2018"
+description = "Procedural macro to convert a refutable let expression to an irrefutable."
+documentation = "https://docs.rs/irrefutable"
+homepage = "https://crates.io/crates/irrefutable"
+repository = "https://github.com/kgv/irrefutable"
+license = "MIT OR Apache-2.0"
 
 [lib]
 proc-macro = true
 
 [dependencies]
-proc-macro2 = "1.0.10"
-quote = "1.0.3"
-syn = { version = "1.0.18", features = ["full"] }
+proc-macro2 = "1.0.18"
+quote = "1.0.7"
+syn = { version = "1.0.30", features = ["full"] }
